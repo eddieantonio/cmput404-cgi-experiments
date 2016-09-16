@@ -2,4 +2,4 @@
 # -*- coding: UTF-8 -*-
 
 print ""
-print "Hello, CGI!"
+print "Hello, from Python!"
