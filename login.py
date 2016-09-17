@@ -55,13 +55,8 @@ after_login = r"""
 if method == 'GET':
     print login_page
 elif method == 'POST':
-    length = int(os.getenv('CONTENT_LENGTH', 0))
-    post_data = sys.stdin.read(length)
-
-    print post_data
-
-    #form = cgi.FieldStorage()
-    #print after_login.format(username=form.getfirst("username"),
-    #                         password=form.getfirst("password"))
+    form = cgi.FieldStorage()
+    print after_login.format(username=form.getfirst("username"),
+                             password=form.getfirst("password"))
 else:
     print ""
