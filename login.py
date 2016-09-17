@@ -5,14 +5,14 @@ import os
 import sys
 import cgi
 import cgitb
+import hashlib
 
 import secret
 
+cookie = hashlib.sha224(secret.username + ':' + secret.password).hexdigest()
+
 # Print Python errors as HTML
 cgitb.enable()
-
-print "Content-Type: text/html"
-print
 
 method = os.getenv('REQUEST_METHOD')
 
@@ -25,6 +25,10 @@ login_page = r"""
 
     <button type="submit"> Login! </button>
 </form>
+"""
+
+normal_page = r"""
+<h1> Hello, {username}! </h1>
 """
 
 after_login = r"""
@@ -50,13 +54,38 @@ after_login = r"""
 </p>
 """
 
+after_login_incorrect = r"""
+<h1> Login incorrect! </h1>
+<a href="login.py"> Try again. </a>
+"""
+
 # http://stackoverflow.com/a/5285982/6626414
 
+print "Content-Type: text/html"
+
 if method == 'GET':
-    print login_page
+    cookie_header = os.getenv('HTTP_COOKIE', '') or '='
+    _, login_cookie = cookie_header.split('=')
+
+    if login_cookie == cookie:
+        print normal_page.format(username=secret.username)
+    else:
+        # Not logged in
+        print
+        print login_page
+
 elif method == 'POST':
     form = cgi.FieldStorage()
-    print after_login.format(username=form.getfirst("username"),
-                             password=form.getfirst("password"))
+    username = form.getfirst("username")
+    password = form.getfirst("password") 
+
+    if username == secret.username and password == secret.password:
+        print "Set-Cookie:", "auth=" + cookie
+        print
+        print after_login.format(username=username, password=password)
+    else:
+        print
+        print after_login_incorrect
+
 else:
-    print ""
+    print "Method not allowed"

@@ -1,0 +1,13 @@
+<style>
+    body {{
+        color: #333;
+        background-color: #fdfdfd
+    }}
+    .spoilers {{
+        color: rgba(0,0,0,0); border-bottom: 1px dashed #ccc
+    }}
+    .spoilers:hover {{
+        transition: color 250ms;
+        color: rgba(36, 36, 36, 1)
+    }}
+</style>
