@@ -22,7 +22,7 @@ Roll my own "template system".
 """
 
 
-__all__ = ['login_page', 'secret_page']
+__all__ = ['login_page', 'secret_page', 'after_login_incorrect']
 
 
 def login_page():
@@ -47,7 +47,7 @@ def secret_page(username=None, password=None):
     Returns the HTML for the page visited after the user has logged-in.
     """
     if username is None or password is None:
-        raise ValueError("")
+        raise ValueError("You need to pass both username and password!")
 
     return _wrapper("""
     <h1> Welcome, {username}! </h1>
@@ -56,30 +56,20 @@ def secret_page(username=None, password=None):
         <span class="spoilers"> {password}</span>.
         </small>
     </p>
-    """.format(username, password))
-
-
-def normal_page(username):
-    return _wrapper(r"""
-    <h1> Hello, {username}! </h1>
-    """)
-
-
-def after_login(username):
-    return _wrapper(r"""
-    <h1> Welcome, {username}! </h1>
-
-    <p> <small> Pst! I know your password is
-        <span class="spoilers"> {password}</span>.
-        </small>
-    </p>
-    """)
+    """.format(username=username.capitalize(), password=password))
 
 
 def after_login_incorrect():
+    """
+    Returns the HTML for the page when the login credentials were typed
+    incorrectly.
+    """
     return _wrapper(r"""
-    <h1> Login incorrect! </h1>
-    <a href="login.py"> Try again. </a>
+    <h1> Login incorrect :c </h1>
+
+    <p> Incorrect username or password (hint: <span class="spoilers"> Check
+        <code>secret.py</code>!</span>)
+    <p> <a href="login.py"> Try again. </a>
     """)
 
 

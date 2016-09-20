@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-username = "hugh"
-password = "swordfish"
+username = "eddie"
+password = "cmput404"
