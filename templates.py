@@ -22,6 +22,8 @@ Roll my own "template system".
 """
 
 
+from cgi import escape
+
 __all__ = ['login_page', 'secret_page', 'after_login_incorrect']
 
 
@@ -56,7 +58,8 @@ def secret_page(username=None, password=None):
         <span class="spoilers"> {password}</span>.
         </small>
     </p>
-    """.format(username=username.capitalize(), password=password))
+    """.format(username=escape(username.capitalize()),
+               password=escape(password)))
 
 
 def after_login_incorrect():
