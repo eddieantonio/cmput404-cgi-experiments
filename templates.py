@@ -2,17 +2,17 @@
 # -*- coding: UTF-8 -*-
 
 # Copyright (C) 2016  Eddie Antonio Santos <easantos@ualberta.ca>
-# 
+#
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation, either
 # version 3 of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
@@ -43,6 +43,9 @@ def login_page():
 
 
 def secret_page(username=None, password=None):
+    """
+    Returns the HTML for the page visited after the user has logged-in.
+    """
     if username is None or password is None:
         raise ValueError("")
 
@@ -55,47 +58,35 @@ def secret_page(username=None, password=None):
     </p>
     """.format(username, password))
 
-    return css + template
+
+def normal_page(username):
+    return _wrapper(r"""
+    <h1> Hello, {username}! </h1>
+    """)
 
 
-# TODO: Convert these to functions.
-normal_page = r"""
-<h1> Hello, {username}! </h1>
-"""
+def after_login(username):
+    return _wrapper(r"""
+    <h1> Welcome, {username}! </h1>
 
-after_login = r"""
-<h1> Welcome, {username}! </h1>
+    <p> <small> Pst! I know your password is
+        <span class="spoilers"> {password}</span>.
+        </small>
+    </p>
+    """)
 
-<p> <small> Pst! I know your password is
-    <span class="spoilers"> {password}</span>.
-    </small>
-</p>
-"""
 
-after_login_incorrect = r"""
-<h1> Login incorrect! </h1>
-<a href="login.py"> Try again. </a>
-"""
-normal_page = r"""
-<h1> Hello, {username}! </h1>
-"""
-
-after_login = r"""
-<h1> Welcome, {username}! </h1>
-
-<p> <small> Pst! I know your password is
-    <span class="spoilers"> {password}</span>.
-    </small>
-</p>
-"""
-
-after_login_incorrect = r"""
-<h1> Login incorrect! </h1>
-<a href="login.py"> Try again. </a>
-"""
+def after_login_incorrect():
+    return _wrapper(r"""
+    <h1> Login incorrect! </h1>
+    <a href="login.py"> Try again. </a>
+    """)
 
 
 def _wrapper(page):
+    """
+    Wraps some text in common HTML.
+    """
     return ("""
     <!DOCTYPE HTML>
     <html>
