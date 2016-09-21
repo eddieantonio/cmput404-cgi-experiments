@@ -16,66 +16,82 @@
 
 import socket
 import os
+import errno
 
 # Change this to change the proxy's listen port.
 PORT = 12345
 # Change this to change the hostname and port to proxy to.
 PROXY_TO = ("localhost", 8000)
 
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientSocket.bind(("0.0.0.0", PORT))
-clientSocket.listen(5)
-clientSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+listen_socket.bind(("0.0.0.0", PORT))
+listen_socket.listen(5)
+listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+print "Proxy listening on localhost:" + str(PORT) + "/"
 
 try:
     while True:
-
-        (incomingSocket, address) = clientSocket.accept()
+        client_socket, address = listen_socket.accept()
         print "we got a connection from %s!" % (str(address))
 
         pid = os.fork()
-        if (pid == 0): # we must be the child (clone) process, so we will handle proxying for this client
+        if (pid == 0):
+            # we must be the child (clone) process, so we will handle proxying
+            # for this client
 
+            remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            remote_socket.connect(PROXY_TO)
 
-            googleSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            googleSocket.connect(PROXY_TO)
-
-            incomingSocket.setblocking(0)
-            googleSocket.setblocking(0)
+            client_socket.setblocking(0)
+            remote_socket.setblocking(0)
 
             while True:
                 # This half of the loop forwards from
                 # client to google
                 skip = False
                 try:
-                    part = incomingSocket.recv(1024)
+                    part = client_socket.recv(1024)
                 except socket.error, exception:
-                    if exception.errno == 11:
+                    if exception.errno == errno.EAGAIN:
                         skip = True
                     else:
                         raise
                 if not skip:
                     if (len(part) > 0):
                             print " > " + part
-                            googleSocket.sendall(part)
-                    else: # part will be "" when the connection is done
+                            remote_socket.sendall(part)
+                    else:
+                        # part will be "" when the connection is done
+                        print "exiting..."
+                        client_socket.shutdown(socket.SHUT_RDWR)
+                        client_socket.close()
+                        remote_socket.shutdown(socket.SHUT_RDWR)
+                        remote_socket.close()
                         exit(0)
 
-                # This half of the loop forwards from
-                # google to the client
+                # This half of the loop forwards from the remote host to the
+                # client
                 skip = False
                 try:
-                    part = googleSocket.recv(1024)
+                    part = remote_socket.recv(1024)
                 except socket.error, exception:
-                    if exception.errno == 11:
+                    if exception.errno == errno.EAGAIN:
                         skip = True
                     else:
                         raise
                 if not skip:
                     if (len(part) > 0):
                             print " < " + part
-                            incomingSocket.sendall(part)
-                    else: # part will be "" when the connection is done
+                            client_socket.sendall(part)
+                    else:
+                        # part will be "" when the connection is done
+                        print "exiting..."
+                        client_socket.shutdown(socket.SHUT_RDWR)
+                        client_socket.close()
+                        remote_socket.shutdown(socket.SHUT_RDWR)
+                        remote_socket.close()
                         exit(0)
+
 finally:
-    clientSocket.close()
+    listen_socket.close()
